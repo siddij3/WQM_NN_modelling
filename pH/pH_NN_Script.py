@@ -34,10 +34,17 @@ import numpy as np
 def get_dict(tt_feats):
     dict = {
         'Time':tt_feats[:, 0],
-        'Current':tt_feats[:, 1], 
-        'pH Elapsed':tt_feats[:, 2] ,
-        'Temperature':tt_feats[:, 3], 
-        'Rinse':tt_feats[:, 4] 
+        'Voltage':tt_feats[:, 1], 
+        'Days Elapsed':tt_feats[:, 2],
+        'Sensor Cycle':tt_feats[:, 3], 
+        'Start':tt_feats[:, 4], 
+        'Increasing':tt_feats[:, 5], 
+        'Decreasing':tt_feats[:, 6], 
+        'Temperature': tt_feats[:, 7],
+        'Repeat Use':tt_feats[:, 8], 
+        'Sensor Number': tt_feats[:, 9],
+        'Measurement Number':tt_feats[:, 10],
+        'Measurement Continuous':tt_feats[:, 11]
     }
     return DataFrame(dict)
 
@@ -49,14 +56,14 @@ def importData(data, scaler):
     train_features = train_dataset.copy()
     test_features = test_dataset.copy()
 
-    train_labels = train_features.pop('Concentration')
-    test_labels = test_features.pop('Concentration')
+    train_labels = train_features.pop('pH')
+    test_labels = test_features.pop('pH')
 
     train_features = get_dict(scaler.fit_transform(train_features.to_numpy()))
     test_features = get_dict(scaler.fit_transform(test_features.to_numpy()))
 
     #For later use
-    data_labels = data.pop('Concentration')
+    data_labels = data.pop('pH')
 
     return data, data_labels, train_dataset, test_dataset, train_features, test_features, train_labels, test_labels, 
 
@@ -66,7 +73,7 @@ def build_model(n1, n2):
   #Experiment with different models, thicknesses, layers, activation functions; Don't limit to only 10 nodes; Measure up to 64 nodes in 2 layers
   
     model = Sequential([
-    layers.Dense(n1, activation=tf.nn.relu, input_shape=[5]),
+    layers.Dense(n1, activation=tf.nn.relu, input_shape=[12]),
     layers.Dense(n2, activation=tf.nn.relu),
     layers.Dense(1)
     ])
@@ -333,7 +340,7 @@ def daysElapsed(optimal_NNs, data, param1, param2,  batch, vbs):
 
 if __name__ == '__main__':
     #dataset = read_csv('aggregated_data.csv')
-    dataset = read_csv('.\gold_aggregated_data.csv')
+    dataset = read_csv(r'.\\Data\\aggregated_data_pH.csv')
     dataset = shuffle(dataset)
 
     std_scaler = StandardScaler()
@@ -347,7 +354,7 @@ if __name__ == '__main__':
     n1_start, n2_start = 8, 8
     sum_nodes = 17 #32
 
-    num_epochs = 100 #400 #500
+    num_epochs = 200 #400 #500
     batch_size = 16 #50
     verbose = 0
 
@@ -469,38 +476,59 @@ if __name__ == '__main__':
     str_test = "Test"
 
     str_time = 'Time'
-    str_increasing = 'Increasing PPM'
-    str_pH =  'pH'
-    str_rinse = 'Rinse'
-    str_temp = 'Temperature'
+    str_increasing = 'Increasing'
+    str_start = 'Start'
+    str_decreasing = 'Decreasing'
+    str_repeat = 'Repeat Use'
+    str_sens_num = 'Sensor Number'
+    str_meas_num = 'Measurement Number'
+    str_meas_cont = 'Measurement Continuous'
+
+    def create_dict(str_param, loop_values, R_val, mae_val):
+
+        str_r =  '{} R'.format(str_param)
+        str_mae =  '{} MAE'.format(str_param)
+
+
+        return {
+        str_param: [i for i in loop_values],
+        str_r    : R_val , 
+        str_mae  : mae_val , 
+        # "Time: Test R"    : R_time_testdata, 
+        # "Time: Test MAE"  : mae_averages_time_testdata
+        }
+
 
   
     print("Isolating Time")
     R_time , mae_averages_time  = isolateParam(optimal_NNs , all_features, 'Time', param_batches, vbs, str_reg )
     # R_time_testdata, mae_averages_time_testdata = isolateParam(optimal_NNs , test_dataset, 'Time',param_batches, vbs, str_test )
 
-    dict_time = {
-        "Time": [i for i in range(0, 51)],
-        "Time:  R"    : R_time , 
-        "Time:  MAE"  : mae_averages_time , 
-        # "Time: Test R"    : R_time_testdata, 
-        # "Time: Test MAE"  : mae_averages_time_testdata
-        }
+    dict_time = create_dict(str_time, range(0, 51), R_time, mae_averages_time)
 
-    print("Isolating pH")
-    R_pH , mae_averages_pH  = isolateParam(optimal_NNs , all_features, str_pH, param_batches, vbs, str_reg )
+
+    print("Isolating increasing")
+    R_increasing , mae_averages_increasing  = isolateParam(optimal_NNs , all_features, str_increasing, param_batches, vbs, str_reg )
     # R_time_testdata, mae_averages_time_testdata = isolateParam(optimal_NNs , test_dataset, 'Time',param_batches, vbs, str_test )
 
-    dict_pH = {
-        "pH": [i for i in np.unique(all_features[str_pH])] ,
-        "pH:  R"    : R_pH , 
-        "pH:  MAE"  : mae_averages_pH , 
-        # "Time: Test R"    : R_time_testdata, 
-        # "Time: Test MAE"  : mae_averages_time_testdata
-        }
+    dict_increasing = create_dict(str_increasing, np.unique(all_features[str_increasing]), R_increasing, mae_averages_increasing)
+
+
+    #print("Isolating decreasing")
+    # R_pH , mae_averages_pH  = isolateParam(optimal_NNs , all_features, str_decreasing, param_batches, vbs, str_reg )
+    # R_time_testdata, mae_averages_time_testdata = isolateParam(optimal_NNs , test_dataset, 'Time',param_batches, vbs, str_test )
+
+    # dict_increasing = {
+    #     "pH": [i for i in np.unique(all_features[str_decreasing])] ,
+    #     "pH:  R"    : R_pH , 
+    #     "pH:  MAE"  : mae_averages_pH , 
+    #     # "Time: Test R"    : R_time_testdata, 
+    #     # "Time: Test MAE"  : mae_averages_time_testdata
+    #     }
+
 
     # # Printing to CSV
-    dict_all = dict_time  | dict_pH
+    dict_all = dict_time  | dict_increasing
     dict_all = DataFrame({ key:pd.Series(value) for key, value in dict_all.items() })
     dict_all.to_csv('Final - Sum {} - Epochs {} - Folds {}.csv'.format(sum_nodes, num_epochs, k_folds), index=False)
 
