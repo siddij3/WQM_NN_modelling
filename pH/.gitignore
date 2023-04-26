@@ -1,0 +1,6 @@
+tmp/
+Test Models/
+gold_fc_dev
+aws
+logins
+*.zip
