@@ -5,8 +5,7 @@
 # -*- coding: utf-8 -*-
 # Regression Example With Boston Dataset: Standardized and Wider
 import os
-import shutil
-import zipfile 
+
 
 import functions
 
@@ -34,7 +33,7 @@ if __name__ == '__main__':
     
     ## DATA IMPORTING AND HANDLING
     table_name = sql_manager.get_table_name()
-    engine = sql_manager.connect()
+    engine = aws.connect()
 
     # if the table doesn't exist, create it from the csv file, 
     # and send the file to 
