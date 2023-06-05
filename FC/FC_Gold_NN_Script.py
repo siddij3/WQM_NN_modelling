@@ -27,13 +27,22 @@ import file_management
 
 import shutil
 
-import aws
+from cloudinary.uploader import upload
+from cloudinary.utils import cloudinary_url
+
+import absl.logging
+absl.logging.set_verbosity(absl.logging.ERROR)
+
+import logins
+
 
 import tensorflow as tf
 import numpy as np
 
 from functions import Pearson
 from functions import smooth_curve
+from functions import get_model_folder_name
+
  
 def build_model(input, n1, n2):
   #Experiment with different models, thicknesses, layers, activation functions; Don't limit to only 10 nodes; Measure up to 64 nodes in 2 layers
@@ -84,7 +93,7 @@ def KCrossValidation(i, features, labels, num_val_samples, epochs, batch, verbos
 if __name__ == '__main__':
 ## DATA IMPORTING AND HANDLING
     table_name = sql_manager.get_table_name()
-    engine = aws.connect()
+    engine = sql_manager.connect()
 
     # dataset = shuffle(sql_to_pandas(table_name, engine))
     dataset = shuffle(sql_manager.get_vals(table_name, "Rinse", 1, engine))
@@ -104,26 +113,23 @@ if __name__ == '__main__':
     else:
         sql_manager.remove_table(table_name, engine)
         pandas_to_sql(table_name, std_params, engine)
+
     # ## PRINCIPAL COMPONENT ANALYSIS
     num_components =  6 #Minimum: Time, current, derivative
 
-    # pca_data, Xpca, principal_data_df = PCA_Decomposition(all_features.copy().to_numpy(), std_scaler, num_components)
-    # bubble(pca_data, train_dataset.keys()[0:num_components])
-    # euclidean(all_features.to_numpy(), Xpca, train_dataset.keys()[0:num_components])
-
      # ## NEURAL NETWORK PARAMETERS
     # 
-    k_folds = 4
+    k_folds = 3
     num_val_samples = len(train_labels) // k_folds
 
     n1_start, n2_start = 15,15
-    sum_nodes =  48
+    sum_nodes =  30
 
-    num_epochs = 400 #400 #500
+    num_epochs = 10 #400 #500
     batch_size = 16 #50
     verbose = 0
 
-    folder_name = file_management.get_file_path()
+    folder_name = get_model_folder_name()
 
     print("\n")
     print("Number Folds: ", k_folds)
@@ -241,10 +247,16 @@ if __name__ == '__main__':
     
 
     zip_filename = folder_name
+    public_name = folder_name
 
     shutil.make_archive(zip_filename, 'zip', f".\\{folder_name}")
-    s3 = aws.s3_bucket()
-    s3.meta.client.upload_file(f'{folder_name}.zip', aws.get_bucket_name(), f'{folder_name}.zip')
+    response = upload(f'{folder_name}.zip', 
+                      public_id=f'{public_name}', 
+                      resource_type='auto')
+
+    print(response)
+    
+
 
     
     dict_epochs = dict_epochs | dict_highest_R | dict_lowest_MAE
