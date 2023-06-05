@@ -1,6 +1,14 @@
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import mean_squared_error
 import math
+import logins
+
+import cloudinary
+import cloudinary.api
+import requests
+import shutil
+import os
+import file_management
 
 from pandas import DataFrame
 
@@ -16,8 +24,7 @@ def get_dict(tt_feats):
     return DataFrame(dict)
 
 def get_model_folder_name():
-    return "gold_fc_dev"
-
+    return "gold_fc_cloud"
 
 def get_table_name():
     return 'gold_fc'
@@ -27,6 +34,26 @@ def get_std_params_table_name():
 
 def get_data_folder_name():
     return "Data"
+
+def load_from_cloud():
+
+    # Specify the public ID or the URL of the ZIP file to download
+    zip_public_id = f'{get_model_folder_name()}.zip'  # Or provide the URL of the ZIP file
+    # Get the download URL for the ZIP file from Cloudinary
+    download_url = cloudinary.utils.cloudinary_url(zip_public_id, 
+                                                resource_type='raw')[0]
+
+    response = requests.get(download_url, stream=True)
+
+    save_path = f".\\{zip_public_id}"
+
+    with open(save_path, 'wb') as file:
+        for chunk in response.iter_content(chunk_size=128):
+            file.write(chunk)
+
+    #Unzip file
+    path = os.path.expanduser(file_management.get_file_path())
+    shutil.unpack_archive(save_path, path)
 
 def Pearson(model, features, y_true, batch, verbose_):
     y_pred = model.predict(
