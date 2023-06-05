@@ -4,14 +4,14 @@ import functions
 
 from sqlalchemy import create_engine
 from sqlalchemy import text
-from sqlalchemy import Table, Column, Integer, String, MetaData, ForeignKey
+import logins
 
 import file_management
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils import shuffle
 
-def get_creds():
+def get_creds_local():
     server = 'localhost' 
     database = 'wqm' 
     username = 'wqm_admin' 
@@ -21,11 +21,21 @@ def get_creds():
     con = f'mysql+pymysql://{username}:{password}@{server}/{database}'
     return con
 
+def get_creds_cloud():
+    server = logins.server
+    database =  logins.database
+    username =  logins.username
+    password = logins.password  
+    port = 3306
+
+    con = f'mysql+pymysql://{username}:{password}@{server}/{database}'
+    return con
+
 def connect():
     engine = create_engine(
-            get_creds(), 
+            get_creds_cloud(), 
             pool_recycle=3600)
-
+    print(get_creds_cloud())
     return engine
 
 def get_table_name():
@@ -108,4 +118,3 @@ def get_query_to_pandas(engine, query):
         pass
     
     return output
-
