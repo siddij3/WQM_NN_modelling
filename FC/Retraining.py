@@ -16,10 +16,11 @@ from keras.models import load_model
 
 import pandas as pd
 from pandas import DataFrame
-import aws
 import file_management
 import sql_manager
 
+import absl.logging
+absl.logging.set_verbosity(absl.logging.ERROR)
 from sql_manager import sql_to_pandas
 
 from sql_manager import pandas_to_sql_if_exists
@@ -33,7 +34,7 @@ if __name__ == '__main__':
     
     ## DATA IMPORTING AND HANDLING
     table_name = sql_manager.get_table_name()
-    engine = aws.connect()
+    engine = sql_manager.connect()
 
     # if the table doesn't exist, create it from the csv file, 
     # and send the file to 
@@ -60,19 +61,15 @@ if __name__ == '__main__':
     batch_size = 16 #50
     verbose = 0
 
-    # GET FILE FROM S3 BUCKET, UNZIP IT, 
+    functions.load_from_cloud()
     path = file_management.get_file_path()
-    s3 = aws.s3_bucket()
-
-    aws.load_from_bucket(s3, path, table_name)
-
     local_download_path = os.path.expanduser(path)
+
     optimal_NNs = [None]*k_folds
 
     i = 0
     tmp = ""
     for filename in os.listdir(local_download_path):
-        
         if "Model" in filename:
             optimal_NNs[i] = load_model(f"{path}\\{filename}")
             print(optimal_NNs[i].optimizer)
