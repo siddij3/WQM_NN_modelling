@@ -83,7 +83,7 @@ def KCrossValidation(i, features, labels, num_val_samples, epochs, batch, verbos
     test_loss, test_mae, test_mse = model.evaluate(val_data, val_targets, verbose=verbose)
     MAE, MSE, test_R, y = Pearson(model, val_data, val_targets.to_numpy(), batch, verbose )
 
-    model.save(f".\\{folder_name}\\Model [{n1}, {n2}] {i}")
+    model.save(f".\\{folder_name}\\Model [{n1}, {n2}] {i}.h5")
 
     return_dict[i] = (history['val_mae'], history['val_mse'], test_mae, MSE, test_R)
 

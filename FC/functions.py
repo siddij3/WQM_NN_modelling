@@ -24,7 +24,7 @@ def get_dict(tt_feats):
     return DataFrame(dict)
 
 def get_model_folder_name():
-    return "gold_fc_cloud"
+    return "gold_fc_h5"
 
 def get_table_name():
     return 'gold_fc'
