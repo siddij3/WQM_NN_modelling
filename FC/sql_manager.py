@@ -31,11 +31,28 @@ def get_creds_cloud():
     con = f'mysql+pymysql://{username}:{password}@{server}/{database}'
     return con
 
+def get_creds_lake():
+    server = logins.server
+    database =  logins.database_lake
+    username =  logins.username
+    password = logins.password  
+    port = 3306
+
+    con = f'mysql+pymysql://{username}:{password}@{server}/{database}'
+    return con 
+
 def connect():
     engine = create_engine(
-            get_creds_cloud(), 
+            get_creds_local(), 
             pool_recycle=3600)
     print(get_creds_cloud())
+    return engine
+
+def connect_lake():
+    engine = create_engine(
+            get_creds_lake(), 
+            pool_recycle=3600)
+    print(get_creds_lake())
     return engine
 
 def get_table_name():
@@ -90,10 +107,12 @@ def sql_to_pandas(table_name, engine):
 
 
 def get_vals(table, col, val, engine):
+    # query = text(f"SELECT time, current, integrals, Concentration FROM {table} where `{col}` = {val}")
     query = text(f"SELECT * FROM {table} where `{col}` = {val}")
     return get_query_to_pandas(engine, query)
     
 def get_two_vals(engine, table, col1, val1, col2, val2):
+    # query = text(f"SELECT time, current, integrals, Concentration FROM {table} where `{col1}` = {val1} and `{col2}` = {val2}")
     query = text(f"SELECT * FROM {table} where `{col1}` = {val1} and `{col2}` = {val2}")
     return get_query_to_pandas(engine, query)
 

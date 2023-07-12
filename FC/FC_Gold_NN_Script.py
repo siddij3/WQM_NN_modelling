@@ -42,6 +42,7 @@ import numpy as np
 from functions import Pearson
 from functions import smooth_curve
 from functions import get_model_folder_name
+from functions import get_num_folds
 
  
 def build_model(input, n1, n2):
@@ -98,9 +99,12 @@ if __name__ == '__main__':
     # dataset = shuffle(sql_to_pandas(table_name, engine))
     dataset = shuffle(sql_manager.get_vals(table_name, "Rinse", 1, engine))
 
-    print(dataset)
     std_scaler = StandardScaler()
     all_features, data_labels, train_dataset, test_dataset, train_features, test_features, train_labels, test_labels, std_scaler = file_management.importData(dataset.copy(), std_scaler)
+
+    std_scaler.mean_ = [std_scaler.mean_[0], std_scaler.mean_[1], std_scaler.mean_[2], std_scaler.mean_[5]]
+    std_scaler.scale_ =  [std_scaler.scale_[0], std_scaler.scale_[1], std_scaler.scale_[2], std_scaler.scale_[5]]
+    std_scaler.var_ =  [std_scaler.var_[0], std_scaler.var_[1],std_scaler.var_[2], std_scaler.var_[5]]
 
     std_params = pd.DataFrame([std_scaler.mean_, std_scaler.scale_, std_scaler.var_], 
                        columns = train_features.keys())
@@ -115,17 +119,17 @@ if __name__ == '__main__':
         pandas_to_sql(table_name, std_params, engine)
 
     # ## PRINCIPAL COMPONENT ANALYSIS
-    num_components =  6 #Minimum: Time, current, derivative
+    num_components =  len(train_features.columns) #Minimum: Time, current, derivative
 
      # ## NEURAL NETWORK PARAMETERS
     # 
-    k_folds = 3
+    k_folds = get_num_folds()
     num_val_samples = len(train_labels) // k_folds
 
-    n1_start, n2_start = 15,15
-    sum_nodes =  30
+    n1_start, n2_start = 14, 14
+    sum_nodes =  40
 
-    num_epochs = 10 #400 #500
+    num_epochs = 400 #400 #500
     batch_size = 16 #50
     verbose = 0
 
@@ -225,7 +229,8 @@ if __name__ == '__main__':
 
         if f"Model" in filename:
             print(filename)
-            shutil.rmtree(f".\\{filepath}\\{filename}", ignore_errors=False)
+            os.remove(f"{filepath}\\{filename}")
+            # shutil.rmtree(f"{filepath}\\{filename}", ignore_errors=False)
 
         i +=1
 
