@@ -18,18 +18,18 @@ def get_dict(tt_feats):
     'Time':tt_feats[:, 0],
     'Current':tt_feats[:, 1], 
     'pH Elapsed':tt_feats[:, 2] ,
-    # 'Temperature':tt_feats[:, 3], 
-    # 'Rinse':tt_feats[:, 4],
+    'Temperature':tt_feats[:, 3], 
+    'Rinse':tt_feats[:, 4],
     'Integrals':tt_feats[:, 5]
     }
     return DataFrame(dict)
 
 def get_model_folder_name():
 
-    return "gold_fc_h5_fc_pH"
+    # return "gold_fc_h5_fc_pH_reg"
 
     # return "gold_fc_h5_3params" #FC only
-    # return "gold_fc_h5"
+    return "gold_fc_h5_reg"
     # return "gold_fc_h5_3params"
     # return "gold_fc_h5_3params"
 
@@ -66,7 +66,7 @@ def load_from_cloud():
     shutil.unpack_archive(save_path, path)
 
 def Pearson(model, features, y_true, batch, verbose_):
-    print(features)
+
     y_pred = model.predict(
         features,
         batch_size=batch,

@@ -102,9 +102,9 @@ if __name__ == '__main__':
     std_scaler = StandardScaler()
     all_features, data_labels, train_dataset, test_dataset, train_features, test_features, train_labels, test_labels, std_scaler = file_management.importData(dataset.copy(), std_scaler)
 
-    std_scaler.mean_ = [std_scaler.mean_[0], std_scaler.mean_[1], std_scaler.mean_[2], std_scaler.mean_[5]]
-    std_scaler.scale_ =  [std_scaler.scale_[0], std_scaler.scale_[1], std_scaler.scale_[2], std_scaler.scale_[5]]
-    std_scaler.var_ =  [std_scaler.var_[0], std_scaler.var_[1],std_scaler.var_[2], std_scaler.var_[5]]
+    # std_scaler.mean_ = [std_scaler.mean_[0], std_scaler.mean_[1], std_scaler.mean_[2], std_scaler.mean_[5]]
+    # std_scaler.scale_ =  [std_scaler.scale_[0], std_scaler.scale_[1], std_scaler.scale_[2], std_scaler.scale_[5]]
+    # std_scaler.var_ =  [std_scaler.var_[0], std_scaler.var_[1],std_scaler.var_[2], std_scaler.var_[5]]
 
     std_params = pd.DataFrame([std_scaler.mean_, std_scaler.scale_, std_scaler.var_], 
                        columns = train_features.keys())
@@ -126,11 +126,11 @@ if __name__ == '__main__':
     k_folds = get_num_folds()
     num_val_samples = len(train_labels) // k_folds
 
-    n1_start, n2_start = 14, 14
-    sum_nodes =  40
+    n1_start, n2_start = 7,7
+    sum_nodes =  20
 
-    num_epochs = 400 #400 #500
-    batch_size = 16 #50
+    num_epochs = 300 #400 #500
+    batch_size = 64 #50
     verbose = 0
 
     folder_name = get_model_folder_name()
