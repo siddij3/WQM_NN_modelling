@@ -1,18 +1,20 @@
 import pandas as pd
-import functions
+import af_functions as functions
 
 
 from sqlalchemy import create_engine
 from sqlalchemy import text
-import logins
+import af_logins as logins
 
-import file_management
+import af_file_management as file_management
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils import shuffle
 
 def get_creds_local():
-    server = 'localhost' 
+   
+    # server = 'localhost' 
+    server = 'host.docker.internal' 
     database = 'wqm' 
     username = 'wqm_admin' 
     password = 'password'  
@@ -31,28 +33,10 @@ def get_creds_cloud():
     con = f'mysql+pymysql://{username}:{password}@{server}/{database}'
     return con
 
-def get_creds_lake():
-    server = logins.server
-    database =  logins.database_lake
-    username =  logins.username
-    password = logins.password  
-    port = 3306
-
-    con = f'mysql+pymysql://{username}:{password}@{server}/{database}'
-    return con 
-
 def connect():
     engine = create_engine(
-            get_creds_local(), 
+            get_creds_cloud(), 
             pool_recycle=3600)
-    print(get_creds_cloud())
-    return engine
-
-def connect_lake():
-    engine = create_engine(
-            get_creds_lake(), 
-            pool_recycle=3600)
-    print(get_creds_lake())
     return engine
 
 def get_table_name():
@@ -107,12 +91,10 @@ def sql_to_pandas(table_name, engine):
 
 
 def get_vals(table, col, val, engine):
-    # query = text(f"SELECT time, current, integrals, Concentration FROM {table} where `{col}` = {val}")
     query = text(f"SELECT * FROM {table} where `{col}` = {val}")
     return get_query_to_pandas(engine, query)
     
 def get_two_vals(engine, table, col1, val1, col2, val2):
-    # query = text(f"SELECT time, current, integrals, Concentration FROM {table} where `{col1}` = {val1} and `{col2}` = {val2}")
     query = text(f"SELECT * FROM {table} where `{col1}` = {val1} and `{col2}` = {val2}")
     return get_query_to_pandas(engine, query)
 

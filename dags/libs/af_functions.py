@@ -1,17 +1,16 @@
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import mean_squared_error
 import math
-import logins
+import af_logins as logins
 
 import cloudinary
 import cloudinary.api
 import requests
 import shutil
 import os
-import file_management
-import numpy as np
-from pandas import DataFrame
+import af_file_management as file_management
 
+from pandas import DataFrame
 
 def get_dict(tt_feats):
     dict = {
@@ -25,13 +24,7 @@ def get_dict(tt_feats):
     return DataFrame(dict)
 
 def get_model_folder_name():
-
-    # return "gold_fc_h5_fc_pH_reg"
-
-    # return "gold_fc_h5_3params" #FC only
-    return "gold_fc_h5_reg"
-    # return "gold_fc_h5_3params"
-    # return "gold_fc_h5_3params"
+    return "gold_fc_h5"
 
 def get_table_name():
     return 'gold_fc'
@@ -42,8 +35,9 @@ def get_std_params_table_name():
 def get_data_folder_name():
     return "Data"
 
+
 def get_num_folds():
-    return 4
+    return 3
 
 def load_from_cloud():
 
@@ -66,7 +60,6 @@ def load_from_cloud():
     shutil.unpack_archive(save_path, path)
 
 def Pearson(model, features, y_true, batch, verbose_):
-
     y_pred = model.predict(
         features,
         batch_size=batch,
@@ -100,36 +93,3 @@ def smooth_curve(points, factor=0.7):
         else:
             smoothed_points.append(point)
     return smoothed_points
-
-
-def filterData(df):
-
-    longest_range_for_diff = 27
-    current = df.pop('Current')
-    time = df.pop('Time')
-    pH = df.pop('pH')
-    temp = df.pop('Temp')
-    integrals = df.pop('Integrals')
-
-
-    grads = np.gradient(current)
- 
-    if len(time) >= 50:
-        l = 0
-        r = l + 1
-
-        for c, item in enumerate(grads):
-            if grads[l] > grads[r]:
-                r +=1
-                if (r - l) == longest_range_for_diff:
-                    integrals = np.trapz(time[l:r], current[l:r])
-
-                if (r - l) >= longest_range_for_diff:
-                    if grads[r] == grads[-1]:
-                        return np.array([time[l:r], current[l:r], pH[l:r], temp[l:r], integrals])
-
-            else:
-                l+=1
-                r = l +1
-
-    return 0
